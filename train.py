@@ -82,6 +82,7 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
         loss_func = torch.nn.CrossEntropyLoss(ignore_index=255)
     max_miou = 0
     step = 0
+    scaler = torch.cuda.amp.GradScaler()
     for epoch in range(args.num_epochs):
         lr = poly_lr_scheduler(optimizer, args.learning_rate, iter=epoch, max_iter=args.num_epochs)
         model.train()
@@ -92,20 +93,21 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
             if torch.cuda.is_available() and args.use_gpu:
                 data = data.cuda()
                 label = label.cuda().long()
-
-            output, output_sup1, output_sup2 = model(data)
-            loss1 = loss_func(output, label)
-            loss2 = loss_func(output_sup1, label)
-            loss3 = loss_func(output_sup2, label)
-            loss = loss1 + loss2 + loss3
-            tq.update(args.batch_size)
-            tq.set_postfix(loss='%.6f' % loss)
+            with torch.cuda.amp.autocast():
+                output, output_sup1, output_sup2 = model(data)
+                loss1 = loss_func(output, label)
+                loss2 = loss_func(output_sup1, label)
+                loss3 = loss_func(output_sup2, label)
+                loss = loss1 + loss2 + loss3
+                tq.update(args.batch_size)
+                tq.set_postfix(loss='%.6f' % loss)
             optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
             step += 1
             writer.add_scalar('loss_step', loss, step)
             loss_record.append(loss.item())
+            scaler.update()
         tq.close()
         loss_train_mean = np.mean(loss_record)
         writer.add_scalar('epoch/loss_epoch_train', float(loss_train_mean), epoch)
@@ -113,16 +115,16 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
         if epoch % args.checkpoint_step == 0 and epoch != 0:
             if not os.path.isdir(args.save_model_path):
                 os.mkdir(args.save_model_path)
-            torch.save(model.module.state_dict(),
+            torch.save(model.state_dict(),
                        os.path.join(args.save_model_path, 'model.pth'))
 
         if epoch % args.validation_step == 0 and epoch != 0:
             precision, miou = val(args, model, dataloader_val)
             if miou > max_miou:
                 max_miou = miou
-                import os
+                #import os
                 os.makedirs(args.save_model_path, exist_ok=True)
-                torch.save(model.module.state_dict(),
+                torch.save(model.state_dict(),
                            os.path.join(args.save_model_path, 'best_dice_loss.pth'))
             writer.add_scalar('epoch/precision_val', precision, epoch)
             writer.add_scalar('epoch/miou val', miou, epoch)
@@ -191,7 +193,7 @@ def main(params):
     # load pretrained model if exists
     if args.pretrained_model_path is not None:
         print('load model from %s ...' % args.pretrained_model_path)
-        model.module.load_state_dict(torch.load(args.pretrained_model_path))
+        model.load_state_dict(torch.load(args.pretrained_model_path))
         print('Done!')
 
     # train
