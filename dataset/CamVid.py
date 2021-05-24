@@ -8,9 +8,12 @@ import pandas as pd
 import numpy as np
 from utils import get_label_info, one_hot_it, RandomCrop, reverse_one_hot, one_hot_it_v11, one_hot_it_v11_dice
 import random
+import imgaug.augementers as iaa
 
 def augmentation(image, label):
-    # augment images with spatial transformation: Flip, Affine, Rotation, etc...
+    HorizontalFlip = iaa.Fliplr(0.5)
+    image = HorizontalFlip.augment_image(image)
+    label = HorizontalFlip.augment_image(label)
     return image, label
 
 
