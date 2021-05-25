@@ -12,12 +12,22 @@ from utils import poly_lr_scheduler
 from utils import reverse_one_hot, compute_global_accuracy, fast_hist, \
     per_class_iu
 from loss import DiceLoss
+import imgaug.augmenters as iaa
+from torchvision import transforms
 
 
 def get_transform():
     train_transform = Compose([
         RandomResizedCrop(320, (0.5, 2.0)),
-        RandomHorizontalFlip(),
+        RandomHorizontalFlip(1),
+        ColorJitter(10,0,0,0),
+        RandomRotation(50),
+        RandomVerticalFlip(1),
+        #RandomCrop(5),
+        #RandomSizedCrop(),
+        #RandomGrayscale(p=0.1),
+        #transforms.FiveCrop(4),
+        #GaussianBlur(10, sigma=(0.1, 2.0)),
         ToTensor(),
         Normalize(mean=[0.485, 0.456, 0.406],
                   std=[0.229, 0.224, 0.225]),
