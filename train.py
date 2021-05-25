@@ -19,10 +19,10 @@ from torchvision import transforms
 def get_transform():
     train_transform = Compose([
         RandomResizedCrop(320, (0.5, 2.0)),
-        RandomHorizontalFlip(1),
-        ColorJitter(10,0,0,0),
-        RandomRotation(50),
-        RandomVerticalFlip(1),
+        RandomHorizontalFlip(),
+        ColorJitter(0.3,0.1,0.1,0.1),
+        RandomRotation(30),
+        #RandomVerticalFlip(),
         #RandomCrop(5),
         #RandomSizedCrop(),
         #RandomGrayscale(p=0.1),
