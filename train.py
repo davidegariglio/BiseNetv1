@@ -12,12 +12,22 @@ from utils import poly_lr_scheduler
 from utils import reverse_one_hot, compute_global_accuracy, fast_hist, \
     per_class_iu
 from loss import DiceLoss
+import imgaug.augmenters as iaa
+from torchvision import transforms
 
 
 def get_transform():
     train_transform = Compose([
         RandomResizedCrop(320, (0.5, 2.0)),
-        RandomHorizontalFlip(),
+        RandomHorizontalFlip(1),
+        ColorJitter(10,0,0,0),
+        RandomRotation(50),
+        RandomVerticalFlip(1),
+        #RandomCrop(5),
+        #RandomSizedCrop(),
+        #RandomGrayscale(p=0.1),
+        #transforms.FiveCrop(4),
+        #GaussianBlur(10, sigma=(0.1, 2.0)),
         ToTensor(),
         Normalize(mean=[0.485, 0.456, 0.406],
                   std=[0.229, 0.224, 0.225]),
@@ -133,10 +143,10 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
 def main(params):
     # basic parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument('--num_epochs', type=int, default=300, help='Number of epochs to train for')
+    parser.add_argument('--num_epochs', type=int, default=2, help='Number of epochs to train for')
     parser.add_argument('--epoch_start_i', type=int, default=0, help='Start counting epochs from this number')
-    parser.add_argument('--checkpoint_step', type=int, default=10, help='How often to save checkpoints (epochs)')
-    parser.add_argument('--validation_step', type=int, default=10, help='How often to perform validation (epochs)')
+    parser.add_argument('--checkpoint_step', type=int, default=1, help='How often to save checkpoints (epochs)')
+    parser.add_argument('--validation_step', type=int, default=1, help='How often to perform validation (epochs)')
     parser.add_argument('--batch_size', type=int, default=1, help='Number of images in each batch')
     parser.add_argument('--context_path', type=str, default="resnet101",
                         help='The context path model you are using, resnet18, resnet101.')
@@ -204,15 +214,15 @@ def main(params):
 
 if __name__ == '__main__':
     params = [
-        '--num_epochs', '30',
+        '--num_epochs', '2',
         '--learning_rate', '1e-3',
         '--data', 'data',
         '--num_workers', '8',
         '--num_classes', '21',
         '--cuda', '0',
         '--batch_size', '16',
-        '--save_model_path', './checkpoints_18_sgd',
-        '--context_path', 'resnet18',  # set resnet18 or resnet101, only support resnet18 and resnet101
+        '--save_model_path', './checkpoints_101_sgd',
+        '--context_path', 'resnet101',  # set resnet18 or resnet101, only support resnet18 and resnet101
         '--optimizer', 'sgd',
 
     ]
