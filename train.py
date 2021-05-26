@@ -16,7 +16,7 @@ import imgaug.augmenters as iaa
 from torchvision import transforms
 
 def get_transform():
-        train_transform = Compose([
+    train_transform = Compose([
         RandomResizedCrop(320, (0.5, 2.0)),
         RandomHorizontalFlip(),
         ColorJitter(0.3,0.1,0.1,0.1),
