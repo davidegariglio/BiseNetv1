@@ -12,22 +12,12 @@ from utils import poly_lr_scheduler
 from utils import reverse_one_hot, compute_global_accuracy, fast_hist, \
     per_class_iu
 from loss import DiceLoss
-import imgaug.augmenters as iaa
-from torchvision import transforms
 
 
 def get_transform():
     train_transform = Compose([
         RandomResizedCrop(320, (0.5, 2.0)),
         RandomHorizontalFlip(),
-        ColorJitter(0.3,0.1,0.1,0.1),
-        RandomRotation(30),
-        #RandomVerticalFlip(),
-        #RandomCrop(5),
-        #RandomSizedCrop(),
-        #RandomGrayscale(p=0.1),
-        #transforms.FiveCrop(4),
-        #GaussianBlur(10, sigma=(0.1, 2.0)),
         ToTensor(),
         Normalize(mean=[0.485, 0.456, 0.406],
                   std=[0.229, 0.224, 0.225]),
@@ -149,7 +139,7 @@ def main(params):
     parser.add_argument('--validation_step', type=int, default=10, help='How often to perform validation (epochs)')
     parser.add_argument('--batch_size', type=int, default=1, help='Number of images in each batch')
     parser.add_argument('--context_path', type=str, default="resnet101",
-                        help='The context path model you are using, resnet18, resnet101.')
+                        help='The context path model you are using: resnet18, resnet50, resnet101.')
     parser.add_argument('--learning_rate', type=float, default=0.01, help='learning rate used for train')
     parser.add_argument('--data', type=str, default='data', help='path of training data')
     parser.add_argument('--num_workers', type=int, default=4, help='num of workers')
@@ -214,15 +204,15 @@ def main(params):
 
 if __name__ == '__main__':
     params = [
-        '--num_epochs', '30',
-        '--learning_rate', '1e-3',
+        '--num_epochs', '5',
+        '--learning_rate', '5e-3',
         '--data', 'data',
         '--num_workers', '8',
         '--num_classes', '21',
         '--cuda', '0',
-        '--batch_size', '16',
-        '--save_model_path', './checkpoints_18_sgd',
-        '--context_path', 'resnet18',  # set resnet18 or resnet101, only support resnet18 and resnet101
+        '--batch_size', '32',
+        '--save_model_path', './checkpoints_50_sgd',
+        '--context_path', 'resnet50',  # set resnet18, resnet50 or resnet101
         '--optimizer', 'sgd',
 
     ]
