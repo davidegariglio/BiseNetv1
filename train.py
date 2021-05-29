@@ -213,7 +213,7 @@ def main(params):
 
 if __name__ == '__main__':
     params = [
-        '--num_epochs', '5',
+        '--num_epochs', '30',
         '--learning_rate', '5e-3',
         '--data', 'data',
         '--num_workers', '8',
