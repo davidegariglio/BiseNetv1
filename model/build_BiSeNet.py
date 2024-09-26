@@ -96,6 +96,15 @@ class BiSeNet(torch.nn.Module):
             # build feature fusion module
             self.feature_fusion_module = FeatureFusionModule(num_classes, 3328)
 
+        elif context_path == 'resnet50':
+            self.attention_refinement_module1 = AttentionRefinementModule(1024, 1024)
+            self.attention_refinement_module2 = AttentionRefinementModule(2048, 2048)
+            # supervision block
+            self.supervision1 = nn.Conv2d(in_channels=1024, out_channels=num_classes, kernel_size=1)
+            self.supervision2 = nn.Conv2d(in_channels=2048, out_channels=num_classes, kernel_size=1)
+            # build feature fusion module
+            self.feature_fusion_module = FeatureFusionModule(num_classes, 3328)
+
         elif context_path == 'resnet18':
             # build attention refinement module  for resnet 18
             self.attention_refinement_module1 = AttentionRefinementModule(256, 256)
